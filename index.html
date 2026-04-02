@@ -125,7 +125,7 @@
   let currentTrackIndex = Math.floor(Math.random() * tracks.length);
   
   const bgAudio = new Audio(tracks[currentTrackIndex]);
-  bgAudio.loop = true;
+  bgAudio.loop = false;
 
   const prevBtn = document.getElementById('prev-track');
   const nextBtn = document.getElementById('next-track');
@@ -137,7 +137,7 @@
     bgAudio.play().then(() => {
       bgAudio.muted = false;
       muteBtn.innerText = "Mute";
-    }).catch((err) => {
+    }).catch(() => {
       muteBtn.innerText = "Unmute";
     });
   };
@@ -156,7 +156,6 @@
   muteBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     userHasInteracted = true;
-    
     if (bgAudio.paused) {
       bgAudio.play();
       bgAudio.muted = false;
@@ -170,12 +169,16 @@
   function loadAndPlayTrack(index) {
     const wasPlaying = !bgAudio.paused;
     bgAudio.src = tracks[index];
-    
     if (wasPlaying || userHasInteracted) {
       bgAudio.play();
       bgAudio.muted = false;
       muteBtn.innerText = "Mute";
     }
+  }
+
+  function nextTrack() {
+    currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
+    loadAndPlayTrack(currentTrackIndex);
   }
 
   prevBtn.addEventListener('click', (e) => {
@@ -186,8 +189,11 @@
 
   nextBtn.addEventListener('click', (e) => {
     e.stopPropagation();
-    currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
-    loadAndPlayTrack(currentTrackIndex);
+    nextTrack();
+  });
+
+  bgAudio.addEventListener('ended', () => {
+    nextTrack();
   });
 </script>
 </body>
