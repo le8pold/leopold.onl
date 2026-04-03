@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- V 3.1.6 -->
+<!-- V 3.2.0 -->
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -16,7 +16,6 @@
       font-family: "Poppins", "Noto Sans JP", sans-serif;
       background: black;
     }
-    
     #bg-video {
       position: fixed;
       top: 0;
@@ -27,7 +26,6 @@
       z-index: 0;
       pointer-events: none;
     }
-
     .content {
       position: absolute;
       top: 50%;
@@ -62,17 +60,45 @@
     a:hover {
       opacity: 1;
     }
-
-    .audio-controls {
+    .player-wrapper {
       position: fixed;
       bottom: 25px;
       right: 30px;
       z-index: 20;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 15px;
+      gap: 5px;
       mix-blend-mode: difference;
       color: white;
+      width: 145px;
+    }
+    .track-display {
+      width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      text-align: center;
+      font-size: 1rem;
+      opacity: 0.6;
+    }
+    .track-name {
+      display: inline-block;
+      padding-left: 100%;
+      animation: scroll-left 5s linear infinite;
+    }
+    .track-name.no-scroll {
+      padding-left: 0;
+      animation: none;
+    }
+    @keyframes scroll-left {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-100%); }
+    }
+    .audio-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
     }
     .audio-controls button {
       background: none;
@@ -97,11 +123,9 @@
   </style>
 </head>
 <body>
-
 <video id="bg-video" autoplay loop muted playsinline>
   <source src="water.mp4" type="video/mp4">
 </video>
-
 <div class="content">
   <h1>leopold hylton</h1>
   <div class="links">
@@ -109,31 +133,41 @@
     <a href="/content">content</a>
     <a href="https://www.tiktok.com/@le8pold?_r=1&amp;_t=ZP-95DBmRFcFzz">tiktok</a>
     <a href="https://instagram.com/le8pold">instagram</a>
-    <!--<a href="https://github.com/le8pold">github</a>-->
     <a href="javascript:void(0)" style="text-decoration: line-through; pointer-events: none; opacity: 0.5;">github</a>
     <a href="mailto:hylton.leopold@gmail.com">email</a>
   </div>
 </div>
-
-<div class="audio-controls">
-  <button id="prev-track">❮</button>
-  <button id="mute-toggle">Unmute</button>
-  <button id="next-track">❯</button>
+<div class="player-wrapper">
+  <div class="track-display">
+    <span id="track-name" class="track-name"></span>
+  </div>
+  <div class="audio-controls">
+    <button id="prev-track">❮</button>
+    <button id="mute-toggle">Unmute</button>
+    <button id="next-track">❯</button>
+  </div>
 </div>
-
 <script>
   const tracks = ['musi1.mp3', 'Black Beatles Remix.mp3', 'Music and Me.mp3', 'queenst.mp3'];
   let currentTrackIndex = Math.floor(Math.random() * tracks.length);
-  
   const bgAudio = new Audio(tracks[currentTrackIndex]);
   bgAudio.loop = false;
-
   const prevBtn = document.getElementById('prev-track');
   const nextBtn = document.getElementById('next-track');
   const muteBtn = document.getElementById('mute-toggle');
-
+  const trackNameEl = document.getElementById('track-name');
+  const trackDisplayEl = document.querySelector('.track-display');
   let userHasInteracted = false;
-
+  function updateTrackName() {
+    let name = tracks[currentTrackIndex].replace('.mp3', '');
+    trackNameEl.textContent = name;
+    trackNameEl.classList.add('no-scroll');
+    setTimeout(() => {
+      if (trackNameEl.scrollWidth > trackDisplayEl.clientWidth) {
+        trackNameEl.classList.remove('no-scroll');
+      }
+    }, 10);
+  }
   const attemptPlay = () => {
     bgAudio.play().then(() => {
       bgAudio.muted = false;
@@ -142,9 +176,8 @@
       muteBtn.innerText = "Unmute";
     });
   };
-
+  updateTrackName();
   attemptPlay();
-
   document.addEventListener('click', () => {
     if (!userHasInteracted && bgAudio.paused) {
       bgAudio.play();
@@ -153,7 +186,6 @@
       userHasInteracted = true;
     }
   }, { once: true });
-
   muteBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     userHasInteracted = true;
@@ -166,33 +198,29 @@
       muteBtn.innerText = bgAudio.muted ? "Unmute" : "Mute";
     }
   });
-
   function loadAndPlayTrack(index) {
     const wasPlaying = !bgAudio.paused;
     bgAudio.src = tracks[index];
+    updateTrackName();
     if (wasPlaying || userHasInteracted) {
       bgAudio.play();
       bgAudio.muted = false;
       muteBtn.innerText = "Mute";
     }
   }
-
   function nextTrack() {
     currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
     loadAndPlayTrack(currentTrackIndex);
   }
-
   prevBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
     loadAndPlayTrack(currentTrackIndex);
   });
-
   nextBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     nextTrack();
   });
-
   bgAudio.addEventListener('ended', () => {
     nextTrack();
   });
