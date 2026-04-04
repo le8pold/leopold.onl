@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<!-- v1.0.0 -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>piano</title>
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        font-family: Arial, sans-serif;
+        background: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        gap: 20px;
+        overflow: hidden;
+    }
+    #keyboard-container {
+        width: 100vw;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    #keyboard {
+        position: relative;
+        display: flex;
+        height: 70vh;
+        border-right: 2px solid black;
+    }
+    .white-key {
+        width: calc((100vw - 176px) / 21);
+        height: 100%;
+        border: 2px solid black;
+        border-right: none;
+        background: white;
+        cursor: pointer;
+        position: relative;
+        flex-shrink: 0;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        padding-bottom: 10px;
+        transition: background 0.05s;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .white-key.active {
+        background: #e0e0e0;
+    }
+    .white-key span {
+        font-size: 9px;
+        text-transform: uppercase;
+        color: #ccc;
+        pointer-events: none;
+        letter-spacing: 0.05em;
+    }
+    .black-key {
+        width: calc((100vw - 176px) / 21 * 0.64);
+        height: 60%;
+        background: black;
+        position: absolute;
+        top: 0;
+        z-index: 2;
+        cursor: pointer;
+        transition: background 0.05s;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .black-key.active {
+        background: #444;
+    }
+    #octave-row {
+        display: flex;
+        align-items: center;
+        gap: 0;
+    }
+    .oct-btn {
+        width: 110px;
+        height: 44px;
+        border: 2px solid black;
+        border-right: none;
+        background: white;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: 0.15s;
+        color: black;
+    }
+    .oct-btn:last-child {
+        border-right: 2px solid black;
+    }
+    .oct-btn:hover {
+        background: black;
+        color: white;
+    }
+    #oct-display {
+        width: 80px;
+        height: 44px;
+        border: 2px solid black;
+        border-right: none;
+        background: white;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: black;
+    }
+</style>
+</head>
+<body>
+<div id="keyboard-container">
+    <div id="keyboard"></div>
+</div>
+<div id="octave-row">
+    <button class="oct-btn" id="oct-down">— Oct</button>
+    <div id="oct-display" id="oct-label">Oct 4</div>
+    <button class="oct-btn" id="oct-up">Oct +</button>
+</div>
+<script>
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let ctx;
+    function getCtx() {
+        if (!ctx) ctx = new AudioContext();
+        if (ctx.state === 'suspended') ctx.resume();
+        return ctx;
+    }
+    function noteFreq(note, octave) {
+        const notes = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+        const n = notes.indexOf(note);
+        return 440 * Math.pow(2, (octave - 4) + (n - 9) / 12);
+    }
+    function playNote(freq) {
+        const ac = getCtx();
+        const osc = ac.createOscillator();
+        const gain = ac.createGain();
+        osc.connect(gain);
+        gain.connect(ac.destination);
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, ac.currentTime);
+        gain.gain.setValueAtTime(0.3, ac.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 1.6);
+        osc.start(ac.currentTime);
+        osc.stop(ac.currentTime + 1.6);
+    }
+    let baseOctave = 4;
+    const WHITE_NOTES = ['C','D','E','F','G','A','B'];
+    const BLACK_OFFSETS = [
+        { wi: 0, note: 'C#' },
+        { wi: 1, note: 'D#' },
+        { wi: 3, note: 'F#' },
+        { wi: 4, note: 'G#' },
+        { wi: 5, note: 'A#' },
+    ];
+    const keyboard = document.getElementById('keyboard');
+    const octDisplay = document.getElementById('oct-display');
+    function buildKeyboard() {
+        keyboard.innerHTML = '';
+        const whiteW = (window.innerWidth - 176) / 21;
+        const octaves = [baseOctave - 1, baseOctave, baseOctave + 1];
+        octaves.forEach((oct) => {
+            WHITE_NOTES.forEach((note) => {
+                const k = document.createElement('div');
+                k.className = 'white-key';
+                k.dataset.note = note;
+                k.dataset.octave = oct;
+                if (note === 'C') {
+                    const sp = document.createElement('span');
+                    sp.textContent = 'c' + oct;
+                    k.appendChild(sp);
+                }
+                k.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    triggerKey(k, note, oct);
+                });
+                k.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    triggerKey(k, note, oct);
+                }, { passive: false });
+                keyboard.appendChild(k);
+            });
+            const octaveWhiteStart = (octaves.indexOf(oct)) * 7;
+            BLACK_OFFSETS.forEach(({ wi, note }) => {
+                const k = document.createElement('div');
+                k.className = 'black-key';
+                k.dataset.note = note;
+                k.dataset.octave = oct;
+                k.style.left = ((octaveWhiteStart + wi) * whiteW + whiteW - whiteW * 0.36) + 'px';
+                k.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    triggerKey(k, note, oct);
+                });
+                k.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    triggerKey(k, note, oct);
+                }, { passive: false });
+                keyboard.appendChild(k);
+            });
+        });
+        octDisplay.textContent = 'Oct ' + baseOctave;
+    }
+    function triggerKey(el, note, oct) {
+        el.classList.add('active');
+        playNote(noteFreq(note, oct));
+        setTimeout(() => el.classList.remove('active'), 180);
+    }
+    document.getElementById('oct-down').addEventListener('click', () => {
+        if (baseOctave > 2) { baseOctave--; buildKeyboard(); }
+    });
+    document.getElementById('oct-up').addEventListener('click', () => {
+        if (baseOctave < 6) { baseOctave++; buildKeyboard(); }
+    });
+    window.addEventListener('resize', buildKeyboard);
+    buildKeyboard();
+</script>
+</body>
+</html>
