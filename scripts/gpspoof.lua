@@ -347,7 +347,7 @@ AutoToggleBtn.Parent = AutoPage
 Instance.new("UICorner", AutoToggleBtn)
 
 local whitelist = {}
-local spoofIDs = {3530789704, 3530790199}
+local spoofIDs = {6767}
 local selectedID = spoofIDs[1]
 local targetSelectedID = spoofIDs[1]
 local idNamesCache = {}
