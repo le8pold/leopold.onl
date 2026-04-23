@@ -95,10 +95,10 @@ local function createModuleCard(name, description)
     return ExecuteBtn
 end
 
-local infYield = createModuleCard("Infinite Yield", "Admin command palette for various utilities.")
-local gps = createModuleCard("GP Spoof", "Manipulate positional data for localized scripts.")
-local tp = createModuleCard("Teleport", "Instant movement to designated map coordinates.")
-local fly = createModuleCard("Fly Mode", "Toggle flight mechanics for R6/R15 rigs.")
+local infYield = createModuleCard("Infinite Yield", "Made by EdgeIY")
+local gps = createModuleCard("GP Spoof", "Gamepass spoofer usually works in laser tower games on the troll section, and other games that use SignalPromptProductPurchaseFinished")
+local tp = createModuleCard("Tp script", "Loop tween tp and a uh like tp and return tp thing")
+local fly = createModuleCard("Fly", "Made by 396abc")
 
 local function closeUI() ScreenGui:Destroy() end
 
