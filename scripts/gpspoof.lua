@@ -3,7 +3,7 @@ local Players = game:GetService("Players")
 local Market = game:GetService("MarketplaceService")
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "TrollPanelProMax67"
+ScreenGui.Name = "SIXSEVEN ignore ts"
 ScreenGui.Parent = game:GetService("CoreGui")
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
@@ -91,6 +91,7 @@ Dropdown.TextColor3 = Color3.fromRGB(40, 40, 40)
 Dropdown.Font = Enum.Font.Gotham
 Dropdown.ZIndex = 20
 Dropdown.Parent = MainPage
+Dropdown.TextTruncate = Enum.TextTruncate.AtEnd
 Instance.new("UICorner", Dropdown)
 
 local Arrow = Instance.new("TextLabel")
@@ -120,7 +121,7 @@ local FireBtn = Instance.new("TextButton")
 FireBtn.Size = UDim2.new(0.8, 0, 0, 50)
 FireBtn.Position = UDim2.new(0.1, 0, 0, 250)
 FireBtn.BackgroundColor3 = Color3.fromRGB(231, 76, 60)
-FireBtn.Text = "FIRE GP SPOOF"
+FireBtn.Text = "SPOOF"
 FireBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 FireBtn.Font = Enum.Font.GothamBold
 FireBtn.TextSize = 16
@@ -148,7 +149,7 @@ Instance.new("UICorner", WLInput)
 local WLAdd = Instance.new("TextButton")
 WLAdd.Size = UDim2.new(0.8, 0, 0, 35)
 WLAdd.Position = UDim2.new(0.1, 0, 0, 55)
-WLAdd.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
+WLAdd.BackgroundColor3 = Color3.fromRGB(123, 123, 123)
 WLAdd.Text = "Add Username"
 WLAdd.TextColor3 = Color3.fromRGB(255, 255, 255)
 WLAdd.Font = Enum.Font.GothamBold
@@ -189,7 +190,7 @@ Instance.new("UICorner", IDInput)
 local IDAdd = Instance.new("TextButton")
 IDAdd.Size = UDim2.new(0.38, 0, 0, 35)
 IDAdd.Position = UDim2.new(0.1, 0, 0, 55)
-IDAdd.BackgroundColor3 = Color3.fromRGB(41, 128, 185)
+IDAdd.BackgroundColor3 = Color3.fromRGB(123, 123, 123)
 IDAdd.Text = "Add Manual"
 IDAdd.TextColor3 = Color3.fromRGB(255, 255, 255)
 IDAdd.Font = Enum.Font.GothamBold
@@ -199,8 +200,8 @@ Instance.new("UICorner", IDAdd)
 local RecordBtn = Instance.new("TextButton")
 RecordBtn.Size = UDim2.new(0.38, 0, 0, 35)
 RecordBtn.Position = UDim2.new(0.52, 0, 0, 55)
-RecordBtn.BackgroundColor3 = Color3.fromRGB(230, 126, 34)
-RecordBtn.Text = "🔴 Record GP"
+RecordBtn.BackgroundColor3 = Color3.fromRGB(123, 123, 123)
+RecordBtn.Text = "Record"
 RecordBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 RecordBtn.Font = Enum.Font.GothamBold
 RecordBtn.Parent = IdsPage
@@ -219,10 +220,54 @@ local IDListLayout = Instance.new("UIListLayout")
 IDListLayout.Padding = UDim.new(0, 5)
 IDListLayout.Parent = IDScroll
 
+-- // LOGIC & DATA
 local whitelist = {}
 local spoofIDs = {3530789704, 3530790199}
 local selectedID = spoofIDs[1]
-Dropdown.Text = tostring(selectedID)
+local idNamesCache = {}
+
+-- Async fetcher so the UI doesn't freeze
+local function fetchNameAsync(id, textElement)
+    if idNamesCache[id] then
+        textElement.Text = idNamesCache[id]
+        return
+    end
+    
+    textElement.Text = "Fetching... [" .. id .. "]"
+    
+    task.spawn(function()
+        -- 1. Try checking as Developer Product
+        local s, i = pcall(function() return Market:GetProductInfo(id, Enum.InfoType.Product) end)
+        if s and i and i.Name then 
+            idNamesCache[id] = i.Name .. " [" .. id .. "]" 
+            textElement.Text = idNamesCache[id] 
+            return 
+        end
+        
+        -- 2. Try checking as Gamepass
+        s, i = pcall(function() return Market:GetProductInfo(id, Enum.InfoType.GamePass) end)
+        if s and i and i.Name then 
+            idNamesCache[id] = i.Name .. " [" .. id .. "]" 
+            textElement.Text = idNamesCache[id] 
+            return 
+        end
+        
+        -- 3. Try checking as standard Asset
+        s, i = pcall(function() return Market:GetProductInfo(id, Enum.InfoType.Asset) end)
+        if s and i and i.Name then 
+            idNamesCache[id] = i.Name .. " [" .. id .. "]" 
+            textElement.Text = idNamesCache[id] 
+            return 
+        end
+        
+        -- Fallback if all fail
+        idNamesCache[id] = "Unknown [" .. id .. "]"
+        textElement.Text = idNamesCache[id]
+    end)
+end
+
+-- Initialize Dropdown Text
+fetchNameAsync(selectedID, Dropdown)
 
 local function updateDropdown()
     for _, item in pairs(DropList:GetChildren()) do
@@ -233,15 +278,17 @@ local function updateDropdown()
         local btn = Instance.new("TextButton")
         btn.Size = UDim2.new(1, 0, 0, 30)
         btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        btn.Text = tostring(id)
         btn.TextColor3 = Color3.fromRGB(40, 40, 40)
         btn.Font = Enum.Font.Gotham
+        btn.TextTruncate = Enum.TextTruncate.AtEnd
         btn.ZIndex = 25
         btn.Parent = DropList
         
+        fetchNameAsync(id, btn)
+        
         btn.MouseButton1Click:Connect(function()
             selectedID = id
-            Dropdown.Text = tostring(id)
+            fetchNameAsync(id, Dropdown)
             DropList.Visible = false
         end)
     end
@@ -267,6 +314,7 @@ local function updateWhitelistUI()
         label.Font = Enum.Font.Gotham
         label.TextSize = 12
         label.TextXAlignment = Enum.TextXAlignment.Left
+        label.TextTruncate = Enum.TextTruncate.AtEnd
         label.Parent = frame
         
         local removeBtn = Instance.new("TextButton")
@@ -301,12 +349,14 @@ local function updateIDsUI()
         label.Size = UDim2.new(0.8, 0, 1, 0)
         label.Position = UDim2.new(0, 10, 0, 0)
         label.BackgroundTransparency = 1
-        label.Text = tostring(id)
         label.TextColor3 = Color3.fromRGB(40, 40, 40)
         label.Font = Enum.Font.Gotham
-        label.TextSize = 14
+        label.TextSize = 13
         label.TextXAlignment = Enum.TextXAlignment.Left
+        label.TextTruncate = Enum.TextTruncate.AtEnd
         label.Parent = frame
+        
+        fetchNameAsync(id, label)
         
         local removeBtn = Instance.new("TextButton")
         removeBtn.Size = UDim2.new(0, 24, 0, 24)
@@ -322,7 +372,11 @@ local function updateIDsUI()
             table.remove(spoofIDs, index)
             if selectedID == id then 
                 selectedID = spoofIDs[1] or 0 
-                Dropdown.Text = tostring(selectedID)
+                if selectedID ~= 0 then
+                    fetchNameAsync(selectedID, Dropdown)
+                else
+                    Dropdown.Text = "Select ID..."
+                end
             end
             updateIDsUI()
             updateDropdown()
