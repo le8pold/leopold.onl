@@ -463,8 +463,8 @@ local function toggleRecording()
         table.insert(recordingConnections, c2)
         table.insert(recordingConnections, c3)
     else
-        RecordBtn.Text = "🔴 Record Prompt"
-        RecordBtn.BackgroundColor3 = Color3.fromRGB(230, 126, 34)
+        RecordBtn.Text = "Record"
+        RecordBtn.BackgroundColor3 = Color3.fromRGB(123, 123, 123)
         
         for _, conn in ipairs(recordingConnections) do
             conn:Disconnect()
