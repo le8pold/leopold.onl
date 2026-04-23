@@ -1,18 +1,20 @@
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
 
 if CoreGui:FindFirstChild("leoui") then CoreGui.leoui:Destroy() end
 
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "leoui"
 ScreenGui.Parent = CoreGui
+ScreenGui.ResetOnSpawn = false
 
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 500, 0, 320)
 MainFrame.Position = UDim2.new(0.5, -250, 0.5, -160)
 MainFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-MainFrame.BorderSizePixel = 1
-MainFrame.BorderColor3 = Color3.fromRGB(200, 200, 200)
+MainFrame.BorderSizePixel = 0
+MainFrame.ClipsDescendants = true
 MainFrame.Parent = ScreenGui
 
 local UICorner = Instance.new("UICorner")
@@ -25,13 +27,43 @@ Header.BackgroundTransparency = 1
 Header.Parent = MainFrame
 
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 1, 0)
+Title.Size = UDim2.new(1, -100, 1, 0)
+Title.Position = UDim2.new(0, 15, 0, 0)
 Title.BackgroundTransparency = 1
 Title.Text = "leo script hub"
 Title.TextColor3 = Color3.fromRGB(30, 35, 45)
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 16
+Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Parent = Header
+
+local Buttons = Instance.new("Frame")
+Buttons.Size = UDim2.new(0, 80, 1, 0)
+Buttons.Position = UDim2.new(1, -85, 0, 0)
+Buttons.BackgroundTransparency = 1
+Buttons.Parent = Header
+
+local UIListLayout = Instance.new("UIListLayout")
+UIListLayout.FillDirection = Enum.FillDirection.Horizontal
+UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+UIListLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+UIListLayout.Padding = UDim.new(0, 5)
+UIListLayout.Parent = Buttons
+
+local function createTopBtn(text, color)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, 30, 0, 30)
+    btn.BackgroundTransparency = 1
+    btn.Text = text
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 18
+    btn.TextColor3 = color
+    btn.Parent = Buttons
+    return btn
+end
+
+local MinBtn = createTopBtn("-", Color3.fromRGB(100, 100, 100))
+local CloseBtn = createTopBtn("×", Color3.fromRGB(200, 50, 50))
 
 local Container = Instance.new("Frame")
 Container.Size = UDim2.new(1, -30, 1, -60)
@@ -43,6 +75,24 @@ local UIGridLayout = Instance.new("UIGridLayout")
 UIGridLayout.CellSize = UDim2.new(0.5, -5, 0, 100)
 UIGridLayout.CellPadding = UDim2.new(0, 10, 0, 10)
 UIGridLayout.Parent = Container
+
+local minimized = false
+MinBtn.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    if minimized then
+        MainFrame:TweenSize(UDim2.new(0, 500, 0, 45), "Out", "Quad", 0.3, true)
+        Container.Visible = false
+        MinBtn.Text = "+"
+    else
+        MainFrame:TweenSize(UDim2.new(0, 500, 0, 320), "Out", "Quad", 0.3, true)
+        Container.Visible = true
+        MinBtn.Text = "-"
+    end
+end)
+
+CloseBtn.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
 
 local function createModuleCard(name, description)
     local Card = Instance.new("Frame")
@@ -95,33 +145,46 @@ local function createModuleCard(name, description)
     return ExecuteBtn
 end
 
+local dragging, dragInput, dragStart, startPos
+Header.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement and dragging then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+end)
+
 local infYield = createModuleCard("Infinite Yield", "Made by EdgeIY")
 local gps = createModuleCard("GP Spoof", "Gamepass spoofer usually works in laser tower games on the troll section, and other games that use SignalPromptProductPurchaseFinished")
 local tp = createModuleCard("Tp script", "Loop tween tp and a uh like tp and return tp thing")
 local fly = createModuleCard("Fly", "Made by 396abc")
 
-local function closeUI() ScreenGui:Destroy() end
-
 infYield.MouseButton1Click:Connect(function()
-    closeUI()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
 end)
 
 gps.MouseButton1Click:Connect(function()
-    closeUI()
     loadstring(game:HttpGet("https://leopold.onl/scripts/gpspoof.lua"))()
 end)
 
 tp.MouseButton1Click:Connect(function()
-    closeUI()
     loadstring(game:HttpGet("https://leopold.onl/scripts/tp.lua"))()
 end)
 
 fly.MouseButton1Click:Connect(function()
-    closeUI()
     local char = Players.LocalPlayer.Character
     if not char or not char:FindFirstChildOfClass("Humanoid") then return end
-    
     local url = (char.Humanoid.RigType == Enum.HumanoidRigType.R6) and 
         "https://raw.githubusercontent.com/396abc/Script/refs/heads/main/Fly.lua" or 
         "https://raw.githubusercontent.com/396abc/Script/refs/heads/main/FlyR15.lua"
