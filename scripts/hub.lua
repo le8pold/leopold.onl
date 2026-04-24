@@ -1,3 +1,24 @@
+--[[
+                                                                                                                                                                                                                             
+MMMMMMMM               MMMMMMMM               AAA               DDDDDDDDDDDDD      EEEEEEEEEEEEEEEEEEEEEE     BBBBBBBBBBBBBBBBB   YYYYYYY       YYYYYYY     LLLLLLLLLLL             EEEEEEEEEEEEEEEEEEEEEE     OOOOOOOOO     
+M:::::::M             M:::::::M              A:::A              D::::::::::::DDD   E::::::::::::::::::::E     B::::::::::::::::B  Y:::::Y       Y:::::Y     L:::::::::L             E::::::::::::::::::::E   OO:::::::::OO   
+M::::::::M           M::::::::M             A:::::A             D:::::::::::::::DD E::::::::::::::::::::E     B::::::BBBBBB:::::B Y:::::Y       Y:::::Y     L:::::::::L             E::::::::::::::::::::E OO:::::::::::::OO 
+M:::::::::M         M:::::::::M            A:::::::A            DDD:::::DDDDD:::::DEE::::::EEEEEEEEE::::E     BB:::::B     B:::::BY::::::Y     Y::::::Y     LL:::::::LL             EE::::::EEEEEEEEE::::EO:::::::OOO:::::::O
+M::::::::::M       M::::::::::M           A:::::::::A             D:::::D    D:::::D E:::::E       EEEEEE       B::::B     B:::::BYYY:::::Y   Y:::::YYY       L:::::L                 E:::::E       EEEEEEO::::::O   O::::::O
+M:::::::::::M     M:::::::::::M          A:::::A:::::A            D:::::D     D:::::DE:::::E                    B::::B     B:::::B   Y:::::Y Y:::::Y          L:::::L                 E:::::E             O:::::O     O:::::O
+M:::::::M::::M   M::::M:::::::M         A:::::A A:::::A           D:::::D     D:::::DE::::::EEEEEEEEEE          B::::BBBBBB:::::B     Y:::::Y:::::Y           L:::::L                 E::::::EEEEEEEEEE   O:::::O     O:::::O
+M::::::M M::::M M::::M M::::::M        A:::::A   A:::::A          D:::::D     D:::::DE:::::::::::::::E          B:::::::::::::BB       Y:::::::::Y            L:::::L                 E:::::::::::::::E   O:::::O     O:::::O
+M::::::M  M::::M::::M  M::::::M       A:::::A     A:::::A         D:::::D     D:::::DE:::::::::::::::E          B::::BBBBBB:::::B       Y:::::::Y             L:::::L                 E:::::::::::::::E   O:::::O     O:::::O
+M::::::M   M:::::::M   M::::::M      A:::::AAAAAAAAA:::::A        D:::::D     D:::::DE::::::EEEEEEEEEE          B::::B     B:::::B       Y:::::Y              L:::::L                 E::::::EEEEEEEEEE   O:::::O     O:::::O
+M::::::M    M:::::M    M::::::M     A:::::::::::::::::::::A       D:::::D     D:::::DE:::::E                    B::::B     B:::::B       Y:::::Y              L:::::L                 E:::::E             O:::::O     O:::::O
+M::::::M     MMMMM     M::::::M    A:::::AAAAAAAAAAAAA:::::A      D:::::D    D:::::D E:::::E       EEEEEE       B::::B     B:::::B       Y:::::Y              L:::::L         LLLLLL  E:::::E       EEEEEEO::::::O   O::::::O
+M::::::M               M::::::M   A:::::A             A:::::A   DDD:::::DDDDD:::::DEE::::::EEEEEEEE:::::E     BB:::::BBBBBB::::::B       Y:::::Y            LL:::::::LLLLLLLLL:::::LEE::::::EEEEEEEE:::::EO:::::::OOO:::::::O
+M::::::M               M::::::M  A:::::A               A:::::A  D:::::::::::::::DD E::::::::::::::::::::E     B:::::::::::::::::B     YYYY:::::YYYY         L::::::::::::::::::::::LE::::::::::::::::::::E OO:::::::::::::OO 
+M::::::M               M::::::M A:::::A                 A:::::A D::::::::::::DDD   E::::::::::::::::::::E     B::::::::::::::::B      Y:::::::::::Y         L::::::::::::::::::::::LE::::::::::::::::::::E   OO:::::::::OO   
+MMMMMMMM               MMMMMMMMAAAAAAA                   AAAAAAADDDDDDDDDDDDD      EEEEEEEEEEEEEEEEEEEEEE     BBBBBBBBBBBBBBBBB       YYYYYYYYYYYYY         LLLLLLLLLLLLLLLLLLLLLLLLEEEEEEEEEEEEEEEEEEEEEE     OOOOOOOOO     
+                                                                                                                                                                                                                             
+]]--
+
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
