@@ -169,6 +169,7 @@ local infYield = createModuleCard("Infinite Yield", "Made by EdgeIY")
 local gps = createModuleCard("GP Spoof", "Gamepass spoofer usually works in laser tower games on the troll section, and other games that use SignalPromptProductPurchaseFinished")
 local tp = createModuleCard("Tp script", "Loop tween tp and a uh like tp and return tp thing")
 local fly = createModuleCard("Fly", "Made by 396abc")
+local azure = createModuleCard("Azure", "Made by Azure Modded team, or idk who, not me though")
 
 infYield.MouseButton1Click:Connect(function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
@@ -189,4 +190,8 @@ fly.MouseButton1Click:Connect(function()
         "https://raw.githubusercontent.com/396abc/Script/refs/heads/main/Fly.lua" or 
         "https://raw.githubusercontent.com/396abc/Script/refs/heads/main/FlyR15.lua"
     loadstring(game:HttpGet(url))()
+end)
+
+azure.MouseButton1Click:Connect(function()
+    loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/a5634aabd753f56a9ddaed14257eae1f.lua"))()
 end)
