@@ -86,16 +86,24 @@ end
 local MinBtn = createTopBtn("-", Color3.fromRGB(100, 100, 100))
 local CloseBtn = createTopBtn("×", Color3.fromRGB(200, 50, 50))
 
-local Container = Instance.new("Frame")
-Container.Size = UDim2.new(1, -30, 1, -60)
-Container.Position = UDim2.new(0, 15, 0, 45)
+local Container = Instance.new("ScrollingFrame")
+Container.Size = UDim2.new(1, -20, 1, -60)
+Container.Position = UDim2.new(0, 10, 0, 45)
 Container.BackgroundTransparency = 1
+Container.BorderSizePixel = 0
+Container.ScrollBarThickness = 4
+Container.ScrollBarImageColor3 = Color3.fromRGB(200, 200, 200)
+Container.CanvasSize = UDim2.new(0, 0, 0, 0)
 Container.Parent = MainFrame
 
 local UIGridLayout = Instance.new("UIGridLayout")
-UIGridLayout.CellSize = UDim2.new(0.5, -5, 0, 100)
+UIGridLayout.CellSize = UDim2.new(0.5, -10, 0, 100)
 UIGridLayout.CellPadding = UDim2.new(0, 10, 0, 10)
 UIGridLayout.Parent = Container
+
+UIGridLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    Container.CanvasSize = UDim2.new(0, 0, 0, UIGridLayout.AbsoluteContentSize.Y + 10)
+end)
 
 local minimized = false
 MinBtn.MouseButton1Click:Connect(function()
@@ -115,7 +123,7 @@ CloseBtn.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
 end)
 
-local function createModuleCard(name, description)
+local function createModuleCard(name, description, callback)
     local Card = Instance.new("Frame")
     Card.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     Card.BorderColor3 = Color3.fromRGB(220, 220, 220)
@@ -148,24 +156,36 @@ local function createModuleCard(name, description)
     Desc.Parent = Card
 
     local ExecuteBtn = Instance.new("TextButton")
-    ExecuteBtn.Size = UDim2.new(0, 60, 0, 25)
-    ExecuteBtn.Position = UDim2.new(1, -70, 1, -35)
+    ExecuteBtn.Size = UDim2.new(0, 75, 0, 25)
+    ExecuteBtn.Position = UDim2.new(1, -85, 1, -35)
     ExecuteBtn.BackgroundColor3 = Color3.fromRGB(240, 240, 240)
     ExecuteBtn.Text = "RUN"
     ExecuteBtn.Font = Enum.Font.GothamBold
-    ExecuteBtn.TextSize = 11
+    ExecuteBtn.TextSize = 10
     ExecuteBtn.TextColor3 = Color3.fromRGB(60, 60, 60)
     ExecuteBtn.Parent = Card
     
     local btnCorner = Instance.new("UICorner", ExecuteBtn)
     btnCorner.CornerRadius = UDim.new(0, 4)
     
-    ExecuteBtn.MouseEnter:Connect(function() ExecuteBtn.BackgroundColor3 = Color3.fromRGB(230, 230, 230) end)
-    ExecuteBtn.MouseLeave:Connect(function() ExecuteBtn.BackgroundColor3 = Color3.fromRGB(240, 240, 240) end)
+    local isRunning = false
 
-    return ExecuteBtn
+    ExecuteBtn.MouseButton1Click:Connect(function()
+        ExecuteBtn.BackgroundColor3 = Color3.fromRGB(180, 230, 180)
+        ExecuteBtn.TextColor3 = Color3.fromRGB(40, 100, 40)
+        ExecuteBtn.Text = "RUNNING"
+        task.spawn(callback)
+    end)
+
+    ExecuteBtn.MouseEnter:Connect(function() 
+        if not isRunning then ExecuteBtn.BackgroundColor3 = Color3.fromRGB(230, 230, 230) end 
+    end)
+    ExecuteBtn.MouseLeave:Connect(function() 
+        if not isRunning then ExecuteBtn.BackgroundColor3 = Color3.fromRGB(240, 240, 240) end 
+    end)
+
+    return Card
 end
-
 local dragging, dragInput, dragStart, startPos
 Header.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -186,25 +206,19 @@ UserInputService.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
 end)
 
-local infYield = createModuleCard("Infinite Yield", "Made by EdgeIY")
-local gps = createModuleCard("GP Spoof", "Gamepass spoofer usually works in laser tower games on the troll section, and other games that use SignalPromptProductPurchaseFinished")
-local tp = createModuleCard("Tp script", "Loop tween tp and a uh like tp and return tp thing")
-local fly = createModuleCard("Fly", "Made by 396abc")
-local azure = createModuleCard("Azure", "Made by Azure Modded team, or idk who, not me though")
-
-infYield.MouseButton1Click:Connect(function()
+createModuleCard("Infinite Yield", "Made by EdgeIY", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
 end)
 
-gps.MouseButton1Click:Connect(function()
+createModuleCard("GP Spoof", "Gamepass spoofer usually works in laser tower games on the troll section, and other games that use SignalPromptProductPurchaseFinished", function()
     loadstring(game:HttpGet("https://leopold.onl/scripts/gpspoof.lua"))()
 end)
 
-tp.MouseButton1Click:Connect(function()
+createModuleCard("Tp script", "Loop tween tp and a uh like tp and return tp thing", function()
     loadstring(game:HttpGet("https://leopold.onl/scripts/tp.lua"))()
 end)
 
-fly.MouseButton1Click:Connect(function()
+createModuleCard("Fly", "Made by 396abc", function()
     local char = Players.LocalPlayer.Character
     if not char or not char:FindFirstChildOfClass("Humanoid") then return end
     local url = (char.Humanoid.RigType == Enum.HumanoidRigType.R6) and 
@@ -213,6 +227,6 @@ fly.MouseButton1Click:Connect(function()
     loadstring(game:HttpGet(url))()
 end)
 
-azure.MouseButton1Click:Connect(function()
+createModuleCard("Azure", "Made by Azure Modded team", function()
     loadstring(game:HttpGet("https://api.luarmor.net/files/v4/loaders/a5634aabd753f56a9ddaed14257eae1f.lua"))()
 end)
