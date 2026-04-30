@@ -1,1 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>leopold.onl/tabtitle</title>
+    <link id="favicon" rel="icon" href="https://via.placeholder.com/32/000000/FFFFFF?text=O" type="image/x-icon">
+    <style>
+        body {
+            margin: 0;
+            background-color: white;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        const originalTitle = document.title;
+        const originalFavicon = "https://via.placeholder.com/32/000000/FFFFFF?text=O";
+        const alternativeTitles = [
+            "a",
+            "b",
+            "c",
+            "d",
+            "e"
+        ];
 
+        // List of favicons corresponding to being away
+        // Using placeholders; replace these with your actual .ico or .png paths
+        const awayFavicon = "https://via.placeholder.com/32/FF0000/FFFFFF?text=!";
+
+        let titleInterval;
+
+        const startTabFlicker = () => {
+            let index = 0;
+            // Switch to the first "away" favicon immediately
+            document.getElementById('favicon').href = awayFavicon;
+
+            titleInterval = setInterval(() => {
+                document.title = alternativeTitles[index];
+                index = (index + 1) % alternativeTitles.length;
+            }, 1500); // Changes every 1.5 seconds
+        };
+        const stopTabFlicker = () => {
+            clearInterval(titleInterval);
+            document.title = originalTitle;
+            document.getElementById('favicon').href = originalFavicon;
+        };
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                startTabFlicker();
+            } else {
+                stopTabFlicker();
+            }
+        });
+    </script>
+</body>
+</html>
