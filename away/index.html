@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>leopold.onl/away</title>
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+    #gate {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+    .display-box {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 250px; 
+        height: 40px;
+        line-height: 40px;
+        padding: 0 5px;
+        border: 2px solid black;
+        font-size: 18px;
+        text-align: center;
+        background: white;
+        font-family: Arial, sans-serif;
+        font-weight: bold;
+    }
+    .info-text {
+        margin-top: 10px;
+        font-size: 14px;
+        color: black;
+        font-family: Arial, sans-serif;
+        text-transform: lowercase;
+    }
+</style>
+</head>
+<body>
+<div id="gate">
+    <div class="display-box" id="longestTimeDisplay">longest time : "0s"</div>
+    <p class="info-text">leave the tab to start counting.</p>
+</div>
+<script>
+    const originalTitle = "leopold.onl/away";
+    let titleInterval;
+    let awayStartTime = 0;
+  
+    let longestTimeMs = localStorage.getItem('longestAwayTime') || 0;
+    const displayEl = document.getElementById("longestTimeDisplay");
+    function formatTime(ms) {
+        let totalSeconds = Math.floor(ms / 1000);
+        let d = Math.floor(totalSeconds / (3600 * 24));
+        let h = Math.floor((totalSeconds % (3600 * 24)) / 3600);
+        let m = Math.floor((totalSeconds % 3600) / 60);
+        let s = totalSeconds % 60;
+        let result = "";
+        if (d > 0) result += d + "d";
+        if (h > 0 || d > 0) result += h + "h";
+        if (m > 0 || h > 0 || d > 0) result += m + "m";
+        result += s + "s";
+        
+        return result;
+    }
+    function updateDisplay() {
+        if (longestTimeMs == 0) {
+            displayEl.textContent = 'longest time : "0s"';
+        } else {
+            displayEl.textContent = `longest time : "${formatTime(longestTimeMs)}"`;
+        }
+    }
+    const startCounter = () => {
+        awayStartTime = Date.now()
+        titleInterval = setInterval(() => {
+            let elapsed = Date.now() - awayStartTime;
+            document.title = formatTime(elapsed);
+        }, 1000);
+    };
+    const stopCounter = () => {
+        clearInterval(titleInterval);
+        if (awayStartTime > 0) {
+            let elapsed = Date.now() - awayStartTime;
+            if (elapsed > longestTimeMs) {
+                longestTimeMs = elapsed;
+                localStorage.setItem('longestAwayTime', longestTimeMs);
+                updateDisplay();
+            }
+        }
+        awayStartTime = 0;
+        document.title = originalTitle;
+    };
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            startCounter();
+        } else {
+            stopCounter();
+        }
+    });
+    document.title = originalTitle;
+    updateDisplay();
+</script>
+</body>
+</html>
