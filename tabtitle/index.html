@@ -20,30 +20,25 @@
 <body>
     <script>
         const originalTitle = document.title;
-        const originalFavicon = "https://via.placeholder.com/32/000000/FFFFFF?text=O";
+        const originalFavicon = "https://leopold.onl/favicon.ico";
         const alternativeTitles = [
-            "a",
-            "b",
-            "c",
-            "d",
-            "e"
+            "HOT MILF FIDDLES HER SKITTLE"
         ];
 
-        // List of favicons corresponding to being away
-        // Using placeholders; replace these with your actual .ico or .png paths
+        
+        
         const awayFavicon = "https://via.placeholder.com/32/FF0000/FFFFFF?text=!";
 
         let titleInterval;
 
         const startTabFlicker = () => {
-            let index = 0;
-            // Switch to the first "away" favicon immediately
+            let index = 0
             document.getElementById('favicon').href = awayFavicon;
 
             titleInterval = setInterval(() => {
                 document.title = alternativeTitles[index];
                 index = (index + 1) % alternativeTitles.length;
-            }, 1500); // Changes every 1.5 seconds
+            }, 1500);
         };
         const stopTabFlicker = () => {
             clearInterval(titleInterval);
