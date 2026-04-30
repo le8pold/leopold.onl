@@ -25,29 +25,43 @@
         align-items: center;
         justify-content: center;
         width: 250px; 
-        height: 40px;
-        line-height: 40px;
-        padding: 0 5px;
+        height: 44px; 
+        padding: 10px;
+        box-sizing: border-box;
         border: 2px solid black;
-        font-size: 18px;
+        font-size: 16px; 
         text-align: center;
         background: white;
         font-family: Arial, sans-serif;
-        font-weight: bold;
+        text-transform: uppercase; 
     }
     .info-text {
         margin-top: 10px;
         font-size: 14px;
         color: black;
         font-family: Arial, sans-serif;
-        text-transform: lowercase;
+        text-align: center;
+    }
+    
+    .footer-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        margin-top: -10px; 
+    }
+    .footer-group p {
+        margin: 0; 
     }
 </style>
 </head>
 <body>
 <div id="gate">
     <div class="display-box" id="longestTimeDisplay">longest time : "0s"</div>
-    <p class="info-text">leave the tab to start counting.</p>
+    
+    <div class="footer-group">
+        <p class="info-text">leave the tab to start counting.</p>
+    </div>
 </div>
 <script>
     const originalTitle = "leopold.onl/away";
@@ -56,6 +70,7 @@
   
     let longestTimeMs = localStorage.getItem('longestAwayTime') || 0;
     const displayEl = document.getElementById("longestTimeDisplay");
+    
     function formatTime(ms) {
         let totalSeconds = Math.floor(ms / 1000);
         let d = Math.floor(totalSeconds / (3600 * 24));
@@ -70,6 +85,7 @@
         
         return result;
     }
+    
     function updateDisplay() {
         if (longestTimeMs == 0) {
             displayEl.textContent = 'longest time : "0s"';
@@ -77,6 +93,7 @@
             displayEl.textContent = `longest time : "${formatTime(longestTimeMs)}"`;
         }
     }
+    
     const startCounter = () => {
         awayStartTime = Date.now()
         titleInterval = setInterval(() => {
@@ -84,6 +101,7 @@
             document.title = formatTime(elapsed);
         }, 1000);
     };
+    
     const stopCounter = () => {
         clearInterval(titleInterval);
         if (awayStartTime > 0) {
@@ -97,6 +115,7 @@
         awayStartTime = 0;
         document.title = originalTitle;
     };
+    
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
             startCounter();
@@ -104,6 +123,7 @@
             stopCounter();
         }
     });
+    
     document.title = originalTitle;
     updateDisplay();
 </script>
