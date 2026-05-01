@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- V 3.4.1 -->
+<!-- V 3.4.2 -->
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -159,7 +159,9 @@
   const trackDisplayEl = document.querySelector('.track-display');
   let userHasInteracted = false;
   function updateTrackName() {
-    let name = tracks[currentTrackIndex].replace('.mp3', '');
+    let fullPath = tracks[currentTrackIndex];
+    let fileName = fullPath.split('/').pop();
+    let name = fileName.replace('.mp3', '');
     trackNameEl.textContent = name;
     trackNameEl.classList.add('no-scroll');
     setTimeout(() => {
