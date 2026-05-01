@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- V 1.0.5 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -39,6 +40,9 @@
         box-sizing: border-box;
     }
     #pinInput {
+        width: 250px;
+    }
+    .verified #pinInput {
         width: 60px;
     }
     #infoInput {
@@ -81,34 +85,63 @@
         color: rgb(0, 150, 0);
         border-color: black;
     }
+    .hidden { display: none !important; }
 </style>
 </head>
 <body>
 <div id="gate">
-    <div class="input-group">
+    <!-- Verification Section -->
+    <div id="verifySection" style="display: flex; flex-direction: column; gap: 20px;">
         <input type="password" id="pinInput" placeholder="PIN" maxlength="4" onfocus="resetUI()">
-        <span class="separator">:</span>
-        <input type="text" id="infoInput" placeholder="public info..." onfocus="resetUI()">
+        <button id="verifyBtn" onclick="verifyPin()">VERIFY</button>
     </div>
-    <input type="text" id="dataInput" placeholder="secret data (url, etc)..." onfocus="resetUI()">
+
+    <!-- Main Content Section -->
+    <div id="mainForm" class="hidden" style="display: flex; flex-direction: column; gap: 20px;">
+        <div class="input-group">
+            <input type="password" id="pinDisplay" placeholder="PIN" maxlength="4" disabled>
+            <span class="separator">:</span>
+            <input type="text" id="infoInput" placeholder="public info..." onfocus="resetUI()">
+        </div>
+        <input type="text" id="dataInput" placeholder="secret data (url, etc)..." onfocus="resetUI()">
+        <button id="sendBtn" onclick="transferData()">TRANSFER</button>
+    </div>
     
-    <button id="sendBtn" onclick="transferData()">TRANSFER</button>
     <p style="margin-top: 10px; font-size: 14px; color: black; font-family: Arial, sans-serif;">made by leo.</p>
 </div>
 <script>
     const pinEl = document.getElementById("pinInput");
+    const verifyBtn = document.getElementById("verifyBtn");
+    const mainForm = document.getElementById("mainForm");
+    const verifySection = document.getElementById("verifySection");
+    
     const infoEl = document.getElementById("infoInput");
     const dataEl = document.getElementById("dataInput");
     const btnEl = document.getElementById("sendBtn");
+    const pinDisplay = document.getElementById("pinDisplay");
     
     const WORKER_URL = 'https://transfer.hylton-leopold.workers.dev/transfer';
     let isProcessing = false;
 
     function resetUI() {
+        verifyBtn.textContent = "VERIFY";
         btnEl.textContent = "TRANSFER";
-        btnEl.disabled = false;
-        btnEl.classList.remove("error-state", "success-state");
+        [verifyBtn, btnEl].forEach(b => {
+            b.disabled = false;
+            b.classList.remove("error-state", "success-state");
+        });
         isProcessing = false;
+    }
+
+    function verifyPin() {
+        if (pinEl.value === "6767") {
+            pinDisplay.value = pinEl.value;
+            verifySection.classList.add("hidden");
+            mainForm.classList.remove("hidden");
+        } else {
+            verifyBtn.classList.add("error-state");
+            verifyBtn.textContent = "BAD PIN";
+        }
     }
 
     async function transferData() {
@@ -117,13 +150,6 @@
         const secretData = dataEl.value.trim();
         
         if (isProcessing) return;
-
-        if (pin !== "6767") {
-            btnEl.classList.add("error-state");
-            btnEl.textContent = "BAD PIN";
-            return;
-        }
-
         if (!info || !secretData) {
             btnEl.classList.add("error-state");
             btnEl.textContent = "MISSING INFO";
@@ -161,7 +187,8 @@
             btnEl.textContent = "TRANSFER FAILED";
         }
     }
-    pinEl.addEventListener("keypress", function(e) { if (e.key === "Enter") transferData(); });
+
+    pinEl.addEventListener("keypress", function(e) { if (e.key === "Enter") verifyPin(); });
     infoEl.addEventListener("keypress", function(e) { if (e.key === "Enter") transferData(); });
     dataEl.addEventListener("keypress", function(e) { if (e.key === "Enter") transferData(); });
 </script>
