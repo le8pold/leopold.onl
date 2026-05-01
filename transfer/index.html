@@ -1,119 +1,80 @@
 <!DOCTYPE html>
-<!-- V 1.3.1 -->
+<!-- V 1.3.2 -->
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>leopold.onl/transfer</title>
-<style>
-    body { margin: 0; font-family: Arial, sans-serif; background: white; display: flex; justify-content: center; align-items: center; height: 100vh; }
-    #gate { display: flex; flex-direction: column; align-items: center; gap: 20px; }
-    input { height: 40px; line-height: 40px; padding: 0 5px; border: 2px solid black; font-size: 18px; text-align: center; outline: none; background: white; font-family: Arial, sans-serif; box-sizing: border-box; width: 250px; }
-    button { width: 250px; height: 44px; padding: 10px; font-size: 16px; border: 2px solid black; background: white; cursor: pointer; font-family: Arial, sans-serif; text-transform: uppercase; transition: 0.2s; box-sizing: border-box; }
-    button:hover:not(:disabled) { background: black; color: white; }
-    button:disabled { cursor: default; background: white; color: black; }
-    button.error-state { color: rgb(255, 0, 0); border-color: black; }
-    button.success-state { color: rgb(0, 150, 0); border-color: black; }
-    .hidden { display: none !important; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>leopold.onl/transfer</title>
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; background: white; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        #gate { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        input { height: 40px; padding: 0 5px; border: 2px solid black; font-size: 18px; text-align: center; width: 250px; outline: none; }
+        button { width: 250px; height: 44px; font-size: 16px; border: 2px solid black; background: white; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+        button:hover:not(:disabled) { background: black; color: white; }
+        button.error-state { color: red; }
+        button.success-state { color: green; }
+        .hidden { display: none !important; }
+    </style>
 </head>
 <body>
-<div id="gate">
-    <div id="verifySection" style="display: flex; flex-direction: column; gap: 20px;">
-        <input type="password" id="pinInput" placeholder="PIN" maxlength="4" onfocus="resetUI()">
-        <button id="verifyBtn" onclick="verifyPin()">VERIFY</button>
+    <div id="gate">
+        <div id="verifySection">
+            <input type="password" id="pinInput" placeholder="PIN" maxlength="4">
+            <button id="verifyBtn" onclick="verifyPin()">VERIFY</button>
+        </div>
+        <div id="mainForm" class="hidden">
+            <input type="text" id="infoInput" placeholder="name" style="margin-bottom:20px">
+            <input type="text" id="dataInput" placeholder="data">
+            <button id="sendBtn" onclick="transferData()" style="margin-top:20px">TRANSFER</button>
+        </div>
+        <p style="font-size: 12px;">made by leo</p>
     </div>
 
-    <div id="mainForm" class="hidden" style="display: flex; flex-direction: column; gap: 20px;">
-        <input type="text" id="infoInput" placeholder="name" onfocus="resetUI()">
-        <input type="text" id="dataInput" placeholder="data" onfocus="resetUI()">
-        <button id="sendBtn" onclick="transferData()">TRANSFER</button>
-    </div>
-    <p style="margin-top: 10px; font-size: 14px; color: black; font-family: Arial, sans-serif;">made by leo.</p>
-</div>
+    <script>
+        const BASE_URL = 'https://transfer.hylton-leopold.workers.dev';
+        let validatedPin = "";
 
-<script>
-    const pinEl = document.getElementById("pinInput");
-    const verifyBtn = document.getElementById("verifyBtn");
-    const mainForm = document.getElementById("mainForm");
-    const verifySection = document.getElementById("verifySection");
-    const infoEl = document.getElementById("infoInput");
-    const dataEl = document.getElementById("dataInput");
-    const btnEl = document.getElementById("sendBtn");
-    
-    const WORKER_URL = 'https://transfer.hylton-leopold.workers.dev/transfer';
-    let isProcessing = false;
-    let validatedPin = "";
+        async function verifyPin() {
+            const btn = document.getElementById("verifyBtn");
+            const pin = document.getElementById("pinInput").value;
+            btn.disabled = true; btn.textContent = "...";
 
-    function resetUI() {
-        verifyBtn.textContent = "VERIFY";
-        btnEl.textContent = "TRANSFER";
-        [verifyBtn, btnEl].forEach(b => {
-            b.disabled = false;
-            b.classList.remove("error-state", "success-state");
-        });
-        isProcessing = false;
-    }
+            try {
+                const res = await fetch(`${BASE_URL}/verify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin })
+                });
+                if (res.status === 401) throw new Error("BAD PIN");
+                if (!res.ok) throw new Error("ERROR");
 
-    async function verifyPin() {
-        const pin = pinEl.value.trim();
-        if (isProcessing || !pin) return;
-
-        isProcessing = true;
-        verifyBtn.disabled = true;
-        verifyBtn.textContent = "...";
-
-        try {
-            const response = await fetch(WORKER_URL.replace('/transfer', '/verify'), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ pin })
-            });
-
-            if (response.status === 401) throw new Error("BAD PIN");
-            if (!response.ok) throw new Error("ERROR");
-
-            validatedPin = pin;
-            verifySection.classList.add("hidden");
-            mainForm.classList.remove("hidden");
-        } catch (error) {
-            verifyBtn.classList.add("error-state");
-            verifyBtn.textContent = error.message;
-        } finally {
-            isProcessing = false;
-            verifyBtn.disabled = false;
+                validatedPin = pin;
+                document.getElementById("verifySection").classList.add("hidden");
+                document.getElementById("mainForm").classList.remove("hidden");
+            } catch (e) {
+                btn.classList.add("error-state"); btn.textContent = e.message;
+                setTimeout(() => { btn.classList.remove("error-state"); btn.textContent = "VERIFY"; btn.disabled = false; }, 2000);
+            }
         }
-    }
 
-    async function transferData() {
-        const info = infoEl.value.trim();
-        const secretData = dataEl.value.trim();
-        if (isProcessing || !info || !secretData) return;
-        
-        isProcessing = true;
-        btnEl.disabled = true;
+        async function transferData() {
+            const btn = document.getElementById("sendBtn");
+            const info = document.getElementById("infoInput").value;
+            const secretData = document.getElementById("dataInput").value;
+            btn.disabled = true; btn.textContent = "...";
 
-        try {
-            const response = await fetch(WORKER_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ pin: validatedPin, info, secretData })
-            });
-            
-            if (!response.ok) throw new Error();
-            btnEl.textContent = "DATA TRANSFERRED";
-            btnEl.classList.add("success-state");
-            infoEl.value = "";
-            dataEl.value = "";
-        } catch (error) {
-            btnEl.classList.add("error-state");
-            btnEl.textContent = "TRANSFER FAILED";
-        } finally {
-            isProcessing = false;
+            try {
+                const res = await fetch(`${BASE_URL}/transfer`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin: validatedPin, info, secretData })
+                });
+                if (!res.ok) throw new Error();
+                btn.classList.add("success-state"); btn.textContent = "DONE";
+            } catch (e) {
+                btn.classList.add("error-state"); btn.textContent = "FAILED";
+            }
         }
-    }
-
-    pinEl.addEventListener("keypress", (e) => { if (e.key === "Enter") verifyPin(); });
-</script>
+    </script>
 </body>
 </html>
