@@ -1,19 +1,85 @@
 <!DOCTYPE html>
-<!-- V 1.3.2 -->
+<!-- V 1.3.3 -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>leopold.onl/transfer</title>
     <style>
-        body { margin: 0; font-family: Arial, sans-serif; background: white; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        #gate { display: flex; flex-direction: column; align-items: center; gap: 20px; }
-        input { height: 40px; padding: 0 5px; border: 2px solid black; font-size: 18px; text-align: center; width: 250px; outline: none; }
-        button { width: 250px; height: 44px; font-size: 16px; border: 2px solid black; background: white; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
-        button:hover:not(:disabled) { background: black; color: white; }
-        button.error-state { color: red; }
-        button.success-state { color: green; }
-        .hidden { display: none !important; }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        #gate {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        #verifySection, #mainForm {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        input {
+            width: 250px;
+            box-sizing: border-box;
+            height: 44px;
+            line-height: 40px;
+            padding: 0 5px;
+            border: 2px solid black;
+            font-size: 24px;
+            text-align: center;
+            outline: none;
+            background: white;
+            display: block;
+            font-family: Arial, sans-serif;
+        }
+        button {
+            width: 250px;
+            box-sizing: border-box;
+            height: 44px;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid black;
+            background: white;
+            cursor: pointer;
+            font-family: Arial, sans-serif;
+            text-transform: uppercase;
+            transition: 0.2s;
+        }
+        button:hover:not(:disabled) {
+            background: black;
+            color: white;
+        }
+        button:disabled {
+            cursor: default;
+            background: white;
+            color: black;
+        }
+        button.error-state {
+            color: rgb(255, 0, 0);
+            border-color: black;
+        }
+        button.success-state {
+            color: rgb(0, 128, 0);
+            border-color: black;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .footer-text {
+            margin-top: 10px; 
+            font-size: 14px; 
+            color: black; 
+            font-family: Arial, sans-serif;
+        }
     </style>
 </head>
 <body>
@@ -23,11 +89,11 @@
             <button id="verifyBtn" onclick="verifyPin()">VERIFY</button>
         </div>
         <div id="mainForm" class="hidden">
-            <input type="text" id="infoInput" placeholder="name" style="margin-bottom:20px">
+            <input type="text" id="infoInput" placeholder="name">
             <input type="text" id="dataInput" placeholder="data">
-            <button id="sendBtn" onclick="transferData()" style="margin-top:20px">TRANSFER</button>
+            <button id="sendBtn" onclick="transferData()">TRANSFER</button>
         </div>
-        <p style="font-size: 12px;">made by leo</p>
+        <p class="footer-text">made by leo</p>
     </div>
 
     <script>
@@ -73,6 +139,7 @@
                 btn.classList.add("success-state"); btn.textContent = "DONE";
             } catch (e) {
                 btn.classList.add("error-state"); btn.textContent = "FAILED";
+                setTimeout(() => { btn.classList.remove("error-state"); btn.textContent = "TRANSFER"; btn.disabled = false; }, 2000);
             }
         }
     </script>
