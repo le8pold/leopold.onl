@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- V 1.0.5 -->
+<!-- V 1.2.0 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -21,12 +21,6 @@
         align-items: center;
         gap: 20px;
     }
-    .input-group {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        width: 250px; 
-    }
     input {
         height: 40px;
         line-height: 40px;
@@ -38,22 +32,7 @@
         background: white;
         font-family: Arial, sans-serif;
         box-sizing: border-box;
-    }
-    #pinInput {
         width: 250px;
-    }
-    .verified #pinInput {
-        width: 60px;
-    }
-    #infoInput {
-        width: 174px;
-    }
-    #dataInput {
-        width: 250px;
-    }
-    .separator {
-        font-weight: bold;
-        font-size: 18px;
     }
     button {
         width: 250px;
@@ -77,33 +56,22 @@
         background: white;
         color: black;
     }
-    button.error-state {
-        color: rgb(255, 0, 0);
-        border-color: black;
-    }
-    button.success-state {
-        color: rgb(0, 150, 0);
-        border-color: black;
-    }
+    button.error-state { color: rgb(255, 0, 0); border-color: black; }
+    button.success-state { color: rgb(0, 150, 0); border-color: black; }
+    
     .hidden { display: none !important; }
 </style>
 </head>
 <body>
 <div id="gate">
-    <!-- Verification Section -->
     <div id="verifySection" style="display: flex; flex-direction: column; gap: 20px;">
         <input type="password" id="pinInput" placeholder="PIN" maxlength="4" onfocus="resetUI()">
         <button id="verifyBtn" onclick="verifyPin()">VERIFY</button>
     </div>
 
-    <!-- Main Content Section -->
     <div id="mainForm" class="hidden" style="display: flex; flex-direction: column; gap: 20px;">
-        <div class="input-group">
-            <input type="password" id="pinDisplay" placeholder="PIN" maxlength="4" disabled>
-            <span class="separator">:</span>
-            <input type="text" id="infoInput" placeholder="public info..." onfocus="resetUI()">
-        </div>
-        <input type="text" id="dataInput" placeholder="secret data (url, etc)..." onfocus="resetUI()">
+        <input type="text" id="infoInput" placeholder="name" onfocus="resetUI()">
+        <input type="text" id="dataInput" placeholder="data" onfocus="resetUI()">
         <button id="sendBtn" onclick="transferData()">TRANSFER</button>
     </div>
     
@@ -118,10 +86,10 @@
     const infoEl = document.getElementById("infoInput");
     const dataEl = document.getElementById("dataInput");
     const btnEl = document.getElementById("sendBtn");
-    const pinDisplay = document.getElementById("pinDisplay");
     
     const WORKER_URL = 'https://transfer.hylton-leopold.workers.dev/transfer';
     let isProcessing = false;
+    let validatedPin = "";
 
     function resetUI() {
         verifyBtn.textContent = "VERIFY";
@@ -135,7 +103,7 @@
 
     function verifyPin() {
         if (pinEl.value === "6767") {
-            pinDisplay.value = pinEl.value;
+            validatedPin = pinEl.value;
             verifySection.classList.add("hidden");
             mainForm.classList.remove("hidden");
         } else {
@@ -145,7 +113,6 @@
     }
 
     async function transferData() {
-        const pin = pinEl.value.trim();
         const info = infoEl.value.trim();
         const secretData = dataEl.value.trim();
         
@@ -170,7 +137,7 @@
             const response = await fetch(WORKER_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ pin, info, secretData })
+                body: JSON.stringify({ pin: validatedPin, info, secretData })
             });
             
             if (!response.ok) throw new Error();
