@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transfer | msg.hylton.onl</title>
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+    #gate {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+    .input-group {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        width: 250px; 
+    }
+    input {
+        height: 40px;
+        line-height: 40px;
+        padding: 0 5px;
+        border: 2px solid black;
+        font-size: 18px;
+        text-align: center;
+        outline: none;
+        background: white;
+        font-family: Arial, sans-serif;
+        box-sizing: border-box;
+    }
+    #pinInput {
+        width: 60px;
+    }
+    #infoInput {
+        width: 174px;
+    }
+    #dataInput {
+        width: 250px;
+    }
+    .separator {
+        font-weight: bold;
+        font-size: 18px;
+    }
+    button {
+        width: 250px;
+        height: 44px;
+        padding: 10px;
+        font-size: 16px;
+        border: 2px solid black;
+        background: white;
+        cursor: pointer;
+        font-family: Arial, sans-serif;
+        text-transform: uppercase;
+        transition: 0.2s;
+        box-sizing: border-box;
+    }
+    button:hover:not(:disabled) {
+        background: black;
+        color: white;
+    }
+    button:disabled {
+        cursor: default;
+        background: white;
+        color: black;
+    }
+    button.error-state {
+        color: rgb(255, 0, 0);
+        border-color: black;
+    }
+    button.success-state {
+        color: rgb(0, 150, 0);
+        border-color: black;
+    }
+</style>
+</head>
+<body>
+<div id="gate">
+    <div class="input-group">
+        <input type="password" id="pinInput" placeholder="PIN" maxlength="4" onfocus="resetUI()">
+        <span class="separator">:</span>
+        <input type="text" id="infoInput" placeholder="public info..." onfocus="resetUI()">
+    </div>
+    <input type="text" id="dataInput" placeholder="secret data (url, etc)..." onfocus="resetUI()">
+    
+    <button id="sendBtn" onclick="transferData()">TRANSFER</button>
+    <p style="margin-top: 10px; font-size: 14px; color: black; font-family: Arial, sans-serif;">made by leo. transfer v1.0</p>
+</div>
+<script>
+    const pinEl = document.getElementById("pinInput");
+    const infoEl = document.getElementById("infoInput");
+    const dataEl = document.getElementById("dataInput");
+    const btnEl = document.getElementById("sendBtn");
+    
+    const WORKER_URL = 'https://YOUR_WORKER_URL_HERE.workers.dev/transfer'; 
+
+    let isProcessing = false;
+
+    function resetUI() {
+        btnEl.textContent = "TRANSFER";
+        btnEl.disabled = false;
+        btnEl.classList.remove("error-state", "success-state");
+        isProcessing = false;
+    }
+
+    async function transferData() {
+        const pin = pinEl.value.trim();
+        const info = infoEl.value.trim();
+        const secretData = dataEl.value.trim();
+        
+        if (isProcessing) return;
+
+        if (pin !== "6767") {
+            btnEl.classList.add("error-state");
+            btnEl.textContent = "BAD PIN";
+            return;
+        }
+
+        if (!info || !secretData) {
+            btnEl.classList.add("error-state");
+            btnEl.textContent = "MISSING INFO";
+            return;
+        }
+        
+        isProcessing = true;
+        btnEl.disabled = true;
+
+        const frames = ['|', '/', '-', '\\'];
+        let i = 0;
+        const spinnerInterval = setInterval(() => {
+            i = (i + 1) % frames.length;
+            btnEl.textContent = frames[i];
+        }, 100);
+
+        try {
+            const response = await fetch(WORKER_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pin, info, secretData })
+            });
+            
+            if (!response.ok) throw new Error();
+
+            clearInterval(spinnerInterval);
+            btnEl.textContent = "DATA TRANSFERRED";
+            btnEl.classList.add("success-state");
+            infoEl.value = "";
+            dataEl.value = "";
+
+        } catch (error) {
+            clearInterval(spinnerInterval);
+            btnEl.classList.add("error-state");
+            btnEl.textContent = "TRANSFER FAILED";
+        }
+    }
+    pinEl.addEventListener("keypress", function(e) { if (e.key === "Enter") transferData(); });
+    infoEl.addEventListener("keypress", function(e) { if (e.key === "Enter") transferData(); });
+    dataEl.addEventListener("keypress", function(e) { if (e.key === "Enter") transferData(); });
+</script>
+</body>
+</html>
