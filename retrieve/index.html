@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>leopold.onl/retrieve</title>
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+    #gate {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+    .input-group {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        width: 250px; 
+    }
+    input, select {
+        height: 40px;
+        line-height: 40px;
+        padding: 0 5px;
+        border: 2px solid black;
+        font-size: 16px;
+        text-align: center;
+        outline: none;
+        background: white;
+        font-family: Arial, sans-serif;
+        box-sizing: border-box;
+        border-radius: 0;
+    }
+    #pinInput {
+        width: 250px;
+        font-size: 18px;
+    }
+    select {
+        width: 250px;
+        cursor: pointer;
+        text-align: left;
+    }
+    #resultData {
+        width: 204px;
+        background: #f0f0f0;
+    }
+    .copy-btn {
+        width: 40px;
+        height: 40px;
+        padding: 0;
+    }
+    button {
+        width: 250px;
+        height: 44px;
+        padding: 10px;
+        font-size: 16px;
+        border: 2px solid black;
+        background: white;
+        cursor: pointer;
+        font-family: Arial, sans-serif;
+        text-transform: uppercase;
+        transition: 0.2s;
+        box-sizing: border-box;
+    }
+    button:hover:not(:disabled) {
+        background: black;
+        color: white;
+    }
+    button:disabled {
+        cursor: default;
+        background: white;
+        color: black;
+    }
+    button.error-state { color: rgb(255, 0, 0); border-color: black; }
+    button.success-state { color: rgb(0, 150, 0); border-color: black; }
+    
+    .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div id="gate">
+    <div id="loginSection" style="display: flex; flex-direction: column; gap: 20px;">
+        <input type="password" id="pinInput" placeholder="PIN" maxlength="4" onfocus="resetUI()">
+        <button id="loadBtn" onclick="loadItems()">LOAD ITEMS</button>
+    </div>
+    <div id="retrieveSection" class="hidden" style="display: flex; flex-direction: column; gap: 20px;">
+        <select id="itemSelect" onchange="fetchSecret()">
+            <option value="" disabled selected>Select an item...</option>
+        </select>
+        
+        <div class="input-group hidden" id="resultGroup">
+            <input type="text" id="resultData" readonly>
+            <button class="copy-btn" id="copyBtn" onclick="copyData()">C</button>
+        </div>
+    </div>
+
+    <p style="margin-top: 10px; font-size: 14px; color: black; font-family: Arial, sans-serif;">made by leo.</p>
+</div>
+<script>
+    const pinEl = document.getElementById("pinInput");
+    const loadBtn = document.getElementById("loadBtn");
+    const loginSec = document.getElementById("loginSection");
+    const retrieveSec = document.getElementById("retrieveSection");
+    const selectEl = document.getElementById("itemSelect");
+    const resultGroup = document.getElementById("resultGroup");
+    const resultData = document.getElementById("resultData");
+    const copyBtn = document.getElementById("copyBtn");
+
+    const WORKER_URL = 'https://YOUR_WORKER_URL_HERE.workers.dev/retrieve';
+
+    let isProcessing = false;
+
+    function resetUI() {
+        loadBtn.textContent = "LOAD ITEMS";
+        loadBtn.disabled = false;
+        loadBtn.classList.remove("error-state", "success-state");
+        isProcessing = false;
+    }
+
+    async function loadItems() {
+        const pin = pinEl.value.trim();
+        if (isProcessing) return;
+
+        if (pin !== "6767") {
+            loadBtn.classList.add("error-state");
+            loadBtn.textContent = "BAD PIN";
+            return;
+        }
+
+        isProcessing = true;
+        loadBtn.disabled = true;
+
+        const frames = ['|', '/', '-', '\\'];
+        let i = 0;
+        const spinnerInterval = setInterval(() => {
+            i = (i + 1) % frames.length;
+            loadBtn.textContent = frames[i];
+        }, 100);
+
+        try {
+            const response = await fetch(WORKER_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pin })
+            });
+
+            if (!response.ok) throw new Error();
+            
+            const items = await response.json();
+            clearInterval(spinnerInterval);
+            
+            selectEl.innerHTML = '<option value="" disabled selected>Select an item...</option>';
+
+            items.forEach(item => {
+                let opt = document.createElement("option");
+                opt.value = item.id;
+                opt.textContent = item.info;
+                selectEl.appendChild(opt);
+            });
+
+            loginSec.classList.add("hidden");
+            retrieveSec.classList.remove("hidden");
+
+        } catch (error) {
+            clearInterval(spinnerInterval);
+            loadBtn.classList.add("error-state");
+            loadBtn.textContent = "LOAD FAILED";
+        }
+    }
+
+    async function fetchSecret() {
+        if (!selectEl.value) return;
+        
+        resultGroup.classList.remove("hidden");
+        resultData.value = "Decrypting...";
+        
+        try {
+            const decryptUrl = WORKER_URL.replace('/retrieve', '/decrypt');
+            const response = await fetch(decryptUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    pin: pinEl.value.trim(), 
+                    id: selectEl.value 
+                })
+            });
+
+            if (!response.ok) throw new Error();
+            
+            const data = await response.json();
+            resultData.value = data.secretData;
+            
+            copyBtn.textContent = "C";
+            copyBtn.classList.remove("success-state");
+        } catch (error) {
+            resultData.value = "ERROR DECRYPTING";
+        }
+    }
+
+    function copyData() {
+        navigator.clipboard.writeText(resultData.value).then(() => {
+            copyBtn.textContent = "✓";
+            copyBtn.classList.add("success-state");
+            setTimeout(() => {
+                copyBtn.textContent = "C";
+                copyBtn.classList.remove("success-state");
+            }, 2000);
+        });
+    }
+
+    pinEl.addEventListener("keypress", function(e) { if (e.key === "Enter") loadItems(); });
+</script>
+</body>
+</html>
