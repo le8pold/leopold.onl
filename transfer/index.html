@@ -1,64 +1,20 @@
 <!DOCTYPE html>
-<!-- V 1.2.0 -->
+<!-- V 1.3.0 -->
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>leopold.onl/transfer</title>
 <style>
-    body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        background: white;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-    }
-    #gate {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 20px;
-    }
-    input {
-        height: 40px;
-        line-height: 40px;
-        padding: 0 5px;
-        border: 2px solid black;
-        font-size: 18px;
-        text-align: center;
-        outline: none;
-        background: white;
-        font-family: Arial, sans-serif;
-        box-sizing: border-box;
-        width: 250px;
-    }
-    button {
-        width: 250px;
-        height: 44px;
-        padding: 10px;
-        font-size: 16px;
-        border: 2px solid black;
-        background: white;
-        cursor: pointer;
-        font-family: Arial, sans-serif;
-        text-transform: uppercase;
-        transition: 0.2s;
-        box-sizing: border-box;
-    }
-    button:hover:not(:disabled) {
-        background: black;
-        color: white;
-    }
-    button:disabled {
-        cursor: default;
-        background: white;
-        color: black;
-    }
+    body { margin: 0; font-family: Arial, sans-serif; background: white; display: flex; justify-content: center; align-items: center; height: 100vh; }
+    #gate { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+    input { height: 40px; line-height: 40px; padding: 0 5px; border: 2px solid black; font-size: 18px; text-align: center; outline: none; background: white; font-family: Arial, sans-serif; box-sizing: border-box; width: 250px; }
+    button { width: 250px; height: 44px; padding: 10px; font-size: 16px; border: 2px solid black; background: white; cursor: pointer; font-family: Arial, sans-serif; text-transform: uppercase; transition: 0.2s; box-sizing: border-box; }
+    button:hover:not(:disabled) { background: black; color: white; }
+    button:disabled { cursor: default; background: white; color: black; }
     button.error-state { color: rgb(255, 0, 0); border-color: black; }
     button.success-state { color: rgb(0, 150, 0); border-color: black; }
-    
     .hidden { display: none !important; }
 </style>
 </head>
@@ -74,15 +30,14 @@
         <input type="text" id="dataInput" placeholder="data" onfocus="resetUI()">
         <button id="sendBtn" onclick="transferData()">TRANSFER</button>
     </div>
-    
-    <p style="margin-top: 10px; font-size: 14px; color: black; font-family: Arial, sans-serif;">made by leo. data is stored in cloudlare KV storage.</p>
+    <p style="margin-top: 10px; font-size: 14px; color: black; font-family: Arial, sans-serif;">made by leo.</p>
 </div>
+
 <script>
     const pinEl = document.getElementById("pinInput");
     const verifyBtn = document.getElementById("verifyBtn");
     const mainForm = document.getElementById("mainForm");
     const verifySection = document.getElementById("verifySection");
-    
     const infoEl = document.getElementById("infoInput");
     const dataEl = document.getElementById("dataInput");
     const btnEl = document.getElementById("sendBtn");
@@ -101,37 +56,43 @@
         isProcessing = false;
     }
 
-    function verifyPin() {
-        if (pinEl.value === "6767") {
-            validatedPin = pinEl.value;
+    async function verifyPin() {
+        const pin = pinEl.value.trim();
+        if (isProcessing || !pin) return;
+
+        isProcessing = true;
+        verifyBtn.disabled = true;
+        verifyBtn.textContent = "...";
+
+        try {
+            const response = await fetch(WORKER_URL.replace('/transfer', '/verify'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pin })
+            });
+
+            if (response.status === 401) throw new Error("BAD PIN");
+            if (!response.ok) throw new Error("ERROR");
+
+            validatedPin = pin;
             verifySection.classList.add("hidden");
             mainForm.classList.remove("hidden");
-        } else {
+        } catch (error) {
             verifyBtn.classList.add("error-state");
-            verifyBtn.textContent = "BAD PIN";
+            verifyBtn.textContent = error.message;
+        } finally {
+            isProcessing = false;
+            verifyBtn.disabled = false;
         }
     }
 
     async function transferData() {
         const info = infoEl.value.trim();
         const secretData = dataEl.value.trim();
-        
-        if (isProcessing) return;
-        if (!info || !secretData) {
-            btnEl.classList.add("error-state");
-            btnEl.textContent = "MISSING INFO";
-            return;
-        }
+        if (isProcessing || !info || !secretData) return;
         
         isProcessing = true;
         btnEl.disabled = true;
-
-        const frames = ['|', '/', '-', '\\'];
-        let i = 0;
-        const spinnerInterval = setInterval(() => {
-            i = (i + 1) % frames.length;
-            btnEl.textContent = frames[i];
-        }, 100);
 
         try {
             const response = await fetch(WORKER_URL, {
@@ -141,23 +102,19 @@
             });
             
             if (!response.ok) throw new Error();
-
-            clearInterval(spinnerInterval);
             btnEl.textContent = "DATA TRANSFERRED";
             btnEl.classList.add("success-state");
             infoEl.value = "";
             dataEl.value = "";
-
         } catch (error) {
-            clearInterval(spinnerInterval);
             btnEl.classList.add("error-state");
             btnEl.textContent = "TRANSFER FAILED";
+        } finally {
+            isProcessing = false;
         }
     }
 
-    pinEl.addEventListener("keypress", function(e) { if (e.key === "Enter") verifyPin(); });
-    infoEl.addEventListener("keypress", function(e) { if (e.key === "Enter") transferData(); });
-    dataEl.addEventListener("keypress", function(e) { if (e.key === "Enter") transferData(); });
+    pinEl.addEventListener("keypress", (e) => { if (e.key === "Enter") verifyPin(); });
 </script>
 </body>
 </html>
