@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Transfer | msg.hylton.onl</title>
+<title>leopold.onl/transfer</title>
 <style>
     body {
         margin: 0;
@@ -93,7 +93,7 @@
     <input type="text" id="dataInput" placeholder="secret data (url, etc)..." onfocus="resetUI()">
     
     <button id="sendBtn" onclick="transferData()">TRANSFER</button>
-    <p style="margin-top: 10px; font-size: 14px; color: black; font-family: Arial, sans-serif;">made by leo. transfer v1.0</p>
+    <p style="margin-top: 10px; font-size: 14px; color: black; font-family: Arial, sans-serif;">made by leo.</p>
 </div>
 <script>
     const pinEl = document.getElementById("pinInput");
@@ -101,8 +101,7 @@
     const dataEl = document.getElementById("dataInput");
     const btnEl = document.getElementById("sendBtn");
     
-    const WORKER_URL = 'https://YOUR_WORKER_URL_HERE.workers.dev/transfer'; 
-
+    const WORKER_URL = '[https://transfer.hylton-leopold.workers.dev/transfer](https://transfer.hylton-leopold.workers.dev/transfer)';
     let isProcessing = false;
 
     function resetUI() {
