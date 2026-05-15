@@ -1,1 +1,327 @@
+<!DOCTYPE html>
+<!-- v5.3.6-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ascii vid</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        font-family: Arial, sans-serif;
+        background: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+    #gate {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+    .box {
+        width: 250px;
+        height: 44px;
+        border: 2px solid black;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        font-family: Arial, sans-serif;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: 0.2s;
+        color: black;
+        background: white;
+        user-select: none;
+    }
+    .box:hover { background: black; color: white; }
+    #file-input { display: none; }
+    #file-name {
+        font-size: 14px;
+        color: black;
+        font-family: Arial, sans-serif;
+        max-width: 250px;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: none;
+    }
+    #width-box {
+        width: 250px;
+        height: 44px;
+        border: 2px solid black;
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+        gap: 10px;
+        font-size: 14px;
+        font-family: Arial, sans-serif;
+    }
+    #width-box label { white-space: nowrap; color: black; }
+    #width-box input[type=range] {
+        flex: 1;
+        accent-color: black;
+        cursor: pointer;
+    }
+    #width-val { white-space: nowrap; min-width: 28px; text-align: right; }
+    .toggle-row {
+        display: flex;
+        width: 250px;
+        height: 44px;
+    }
+    .toggle-btn {
+        flex: 1;
+        height: 100%;
+        font-size: 16px;
+        font-family: Arial, sans-serif;
+        text-transform: uppercase;
+        border: 2px solid black;
+        background: white;
+        cursor: pointer;
+        transition: 0.2s;
+        color: black;
+    }
+    .toggle-btn:first-child { border-right: 1px solid black; }
+    .toggle-btn:last-child  { border-left: 1px solid black; }
+    .toggle-btn.active      { background: black; color: white; }
+    .toggle-btn:not(.active):hover { background: black; color: white; }
+    #playBtn {
+        width: 250px;
+        height: 44px;
+        font-size: 16px;
+        font-family: Arial, sans-serif;
+        text-transform: uppercase;
+        border: 2px solid black;
+        background: white;
+        cursor: pointer;
+        transition: 0.2s;
+        color: black;
+    }
+    #playBtn:hover:not(:disabled) { background: black; color: white; }
+    #playBtn:disabled { color: #aaa; border-color: #aaa; cursor: default; }
+    #player-zone {
+        display: none;
+        flex-direction: column;
+        width: 100vw;
+        height: 100vh;
+        background: black;
+    }
+    #player-zone.visible { display: flex; }
+    #ascii-canvas {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+    #ascii-output {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 7px;
+        line-height: 1.15;
+        white-space: pre;
+        display: block;
+    }
+    #status-bar {
+        height: 36px;
+        min-height: 36px;
+        background: black;
+        border-top: 1px solid #222;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0 14px;
+        flex-shrink: 0;
+    }
+    #progress-bar-wrap {
+        flex: 1;
+        height: 2px;
+        background: #333;
+        overflow: hidden;
+    }
+    #progress-bar {
+        height: 100%;
+        background: white;
+        width: 0%;
+        transition: width 0.1s linear;
+    }
+    #fps-display {
+        font-size: 12px;
+        font-family: Arial, sans-serif;
+        color: #555;
+        white-space: nowrap;
+    }
+    #stop-btn {
+        font-size: 12px;
+        font-family: Arial, sans-serif;
+        text-transform: uppercase;
+        border: 1px solid #444;
+        background: transparent;
+        color: #888;
+        padding: 3px 10px;
+        cursor: pointer;
+        transition: 0.2s;
+        white-space: nowrap;
+    }
+    #stop-btn:hover { border-color: white; color: white; }
+</style>
+</head>
+<body>
+<div id="gate">
+    <div class="box" id="drop-box">drop video / browse</div>
+    <input type="file" id="file-input" accept="video/*">
+    <div id="file-name"></div>
+    <div id="width-box">
+        <label>Width</label>
+        <input type="range" id="width-slider" min="40" max="300" value="120"
+            oninput="document.getElementById('width-val').textContent=this.value">
+        <span id="width-val">120</span>
+    </div>
+    <div class="toggle-row">
+        <button class="toggle-btn active" id="btn-once" onclick="setLoop(false)">Once</button>
+        <button class="toggle-btn" id="btn-loop" onclick="setLoop(true)">Loop</button>
+    </div>
 
+    <button id="playBtn" disabled onclick="beginPlay()">Play</button>
+</div>
+<div id="player-zone">
+    <div id="ascii-canvas">
+        <pre id="ascii-output"></pre>
+    </div>
+    <div id="status-bar">
+        <button id="stop-btn" onclick="stopPlayback()">■ stop</button>
+        <div id="progress-bar-wrap"><div id="progress-bar"></div></div>
+        <div id="fps-display">— fps</div>
+    </div>
+</div>
+<canvas id="hidden-canvas" style="display:none"></canvas>
+<script>
+const ASCII_CHARS =
+    " `.-':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu" +
+    "[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$Bg0MNWQ%&@";
+const N_CHARS = ASCII_CHARS.length;
+let loopVideo = false;
+let outputWidth = 120;
+let videoEl = null;
+let animFrame = null;
+let isPlaying = false;
+let pendingFile = null;
+const hiddenCanvas = document.getElementById('hidden-canvas');
+const ctx = hiddenCanvas.getContext('2d', { willReadFrequently: true });
+const output = document.getElementById('ascii-output');
+const progressBar = document.getElementById('progress-bar');
+const fpsDisplay = document.getElementById('fps-display');
+const dropBox = document.getElementById('drop-box');
+const fileInput = document.getElementById('file-input');
+const fileNameEl = document.getElementById('file-name');
+const playBtn = document.getElementById('playBtn');
+function setLoop(v) {
+    loopVideo = v;
+    document.getElementById('btn-once').classList.toggle('active', !v);
+    document.getElementById('btn-loop').classList.toggle('active', v);
+}
+dropBox.addEventListener('click', () => fileInput.click());
+dropBox.addEventListener('dragover', e => { e.preventDefault(); dropBox.classList.add('drag-over'); });
+dropBox.addEventListener('dragleave', () => dropBox.classList.remove('drag-over'));
+dropBox.addEventListener('drop', e => {
+    e.preventDefault();
+    dropBox.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('video/')) setFile(file);
+});
+fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) setFile(fileInput.files[0]);
+});
+function setFile(file) {
+    pendingFile = file;
+    fileNameEl.textContent = file.name;
+    fileNameEl.style.display = 'block';
+    dropBox.textContent = 'change video';
+    playBtn.disabled = false;
+}
+function beginPlay() {
+    if (!pendingFile) return;
+    outputWidth = parseInt(document.getElementById('width-slider').value);
+
+    if (videoEl) { videoEl.pause(); videoEl.src = ''; }
+    videoEl = document.createElement('video');
+    videoEl.src = URL.createObjectURL(pendingFile);
+    videoEl.muted = true;
+    videoEl.playsInline = true;
+    videoEl.preload = 'auto';
+
+    videoEl.addEventListener('loadedmetadata', () => {
+        document.getElementById('gate').style.display = 'none';
+        document.getElementById('player-zone').classList.add('visible');
+        startRender();
+    });
+    videoEl.load();
+}
+let lastRenderTime = 0;
+let fpsSmooth = 0;
+function startRender() {
+    isPlaying = true;
+    lastRenderTime = 0;
+    fpsSmooth = 0;
+    videoEl.play();
+    videoEl.addEventListener('ended', onVideoEnd);
+    requestAnimationFrame(renderLoop);
+}
+function onVideoEnd() {
+    if (loopVideo) {
+        videoEl.currentTime = 0;
+        videoEl.play();
+    } else {
+        stopPlayback();
+    }
+}
+function renderLoop(timestamp) {
+    if (!isPlaying) return;
+
+    if (lastRenderTime > 0) {
+        const dt = (timestamp - lastRenderTime) / 1000;
+        fpsSmooth = fpsSmooth * 0.85 + (1 / dt) * 0.15;
+        fpsDisplay.textContent = fpsSmooth.toFixed(1) + ' fps';
+    }
+    lastRenderTime = timestamp;
+    const vw = videoEl.videoWidth;
+    const vh = videoEl.videoHeight;
+    if (!vw || !vh) { animFrame = requestAnimationFrame(renderLoop); return; }
+    const charW = outputWidth;
+    const charH = Math.max(1, Math.floor(charW / (vw / vh) / 2));
+    hiddenCanvas.width = charW;
+    hiddenCanvas.height = charH;
+    ctx.drawImage(videoEl, 0, 0, charW, charH);
+    const data = ctx.getImageData(0, 0, charW, charH).data;
+    const lines = [];
+    for (let y = 0; y < charH; y++) {
+        let line = '';
+        for (let x = 0; x < charW; x++) {
+            const i = (y * charW + x) * 4;
+            const r = data[i], g = data[i+1], b = data[i+2];
+            const lum = 0.299*r + 0.587*g + 0.114*b;
+            const ch = ASCII_CHARS[Math.min(N_CHARS-1, Math.floor(lum/255*(N_CHARS-1)))];
+            line += `<span style="color:rgb(${r},${g},${b})">${ch}</span>`;
+        }
+        lines.push(line);
+    }
+    output.innerHTML = lines.join('\n');
+
+    progressBar.style.width = Math.min(100, (videoEl.currentTime / (videoEl.duration || 1)) * 100) + '%';
+    animFrame = requestAnimationFrame(renderLoop);
+}
+function stopPlayback() {
+    isPlaying = false;
+    if (animFrame) cancelAnimationFrame(animFrame);
+    if (videoEl) { videoEl.pause(); videoEl.removeEventListener('ended', onVideoEnd); }
+    document.getElementById('player-zone').classList.remove('visible');
+    document.getElementById('gate').style.display = 'flex';
+    progressBar.style.width = '0%';
+    output.innerHTML = '';
+}
+</script>
+</body>
+</html>
