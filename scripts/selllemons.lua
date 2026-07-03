@@ -18,7 +18,7 @@ if not userTycoon then
     return
 end
 
-if CoreGui:FindFirstChild("leoui") then CoreGui.leoui:Destroy() end
+if CoreGui:FindFirstChild("leouilemons") then CoreGui.leoui:Destroy() end
 
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "leouilemons"
@@ -26,7 +26,7 @@ ScreenGui.Parent = CoreGui
 ScreenGui.ResetOnSpawn = false
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 500, 0, 320)
+MainFrame.Size = UDim2.new(0, 500, 0, 160)
 MainFrame.Position = UDim2.new(0.5, -250, 0.5, -160)
 MainFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 MainFrame.BorderSizePixel = 0
@@ -108,7 +108,7 @@ MinBtn.MouseButton1Click:Connect(function()
         Container.Visible = false
         MinBtn.Text = "+"
     else
-        MainFrame:TweenSize(UDim2.new(0, 500, 0, 320), "Out", "Quad", 0.3, true)
+        MainFrame:TweenSize(UDim2.new(0, 500, 0, 160), "Out", "Quad", 0.3, true)
         Container.Visible = true
         MinBtn.Text = "-"
     end
@@ -200,7 +200,6 @@ end
 
 local AutoBuy = false
 local AutoUpgrade = false
-local AutoFruit = false
 
 local originalButtonCFrames = {}
 
@@ -233,7 +232,7 @@ end
 
 task.spawn(function()
     while true do
-        task.wait(0.1)
+        task.wait(0.5) 
         if AutoBuy then
             local character = LocalPlayer.Character
             local hrp = character and character:FindFirstChild("HumanoidRootPart")
@@ -241,11 +240,9 @@ task.spawn(function()
             if hrp then
                 local Buttons = getButtons()
                 for _, buttonPart in ipairs(Buttons) do
-
                     if not originalButtonCFrames[buttonPart] then
                         originalButtonCFrames[buttonPart] = buttonPart.CFrame
                     end
-
                     pcall(function()
                         buttonPart.CFrame = hrp.CFrame
                         firetouchinterest(hrp, buttonPart, 0)
@@ -260,10 +257,12 @@ end)
 local function upgradeMachines()
     for _, obj in ipairs(userTycoon.Purchases:GetDescendants()) do
         if obj:IsA("RemoteFunction") and obj.Name == "Upgrade" then
-            pcall(function()
-                for level = 1, 100 do
-                    obj:InvokeServer(level)
-                end
+            task.spawn(function() 
+                pcall(function()
+                    for level = 1, 50 do
+                        obj:InvokeServer(level) 
+                    end
+                end)
             end)
         end
     end
@@ -271,81 +270,9 @@ end
 
 task.spawn(function()
     while true do
-        task.wait(0.1)
+        task.wait(0.5) 
         if AutoUpgrade then
-            pcall(function()
-                upgradeMachines()
-            end)
-        end
-    end
-end)
-
-local Trees = {}
-
-local function addTree(obj)
-    if obj:IsA("Model") and obj.Name == "LemonTree" then
-        if not table.find(Trees, obj) then
-            table.insert(Trees, obj)
-        end
-    end
-end
-
-local function removeTree(obj)
-    local index = table.find(Trees, obj)
-    if index then
-        table.remove(Trees, index)
-    end
-end
-
-for _, v in ipairs(workspace:GetDescendants()) do
-    addTree(v)
-end
-
-workspace.DescendantAdded:Connect(addTree)
-workspace.DescendantRemoving:Connect(removeTree)
-
-local function collectFruit(tree)
-    for _, obj in ipairs(tree:GetDescendants()) do
-        if obj:IsA("BasePart") then
-            obj.CanCollide = false
-        end
-    end
-
-    local character = LocalPlayer.Character
-    local hrp = character and character:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
-
-    hrp.CFrame = tree:GetPivot() + Vector3.new(0, 5, 0)
-
-    for _, obj in ipairs(tree:GetDescendants()) do
-        if obj:IsA("BasePart") and obj.Name == "Fruit" then
-            obj.CanCollide = false
-            local clickPart = obj:FindFirstChild("ClickPart")
-            if clickPart then
-                local detector = clickPart:FindFirstChildOfClass("ClickDetector")
-                if detector then
-                    task.wait(0.45)
-                    pcall(function()
-                        fireclickdetector(detector)
-                    end)
-                end
-            end
-        end
-    end
-end
-
-task.spawn(function()
-    while true do
-        task.wait(0.1)
-        if AutoFruit then
-            for _, tree in ipairs(Trees) do
-                if not AutoFruit then break end
-                if tree and tree.Parent then
-                    pcall(function()
-                        collectFruit(tree)
-                    end)
-                end
-            end
+            upgradeMachines()
         end
     end
 end)
@@ -353,15 +280,10 @@ end)
 createToggleCard("Auto Buy", "Teleports buttons to player to auto purchase. Returns them when off.", function(Value)
     AutoBuy = Value
     if not Value then
-
         restoreButtons()
     end
 end)
 
 createToggleCard("Auto Upgrade", "Automatically maxes out your earner upgrades.", function(Value)
     AutoUpgrade = Value
-end)
-
-createToggleCard("Auto Fruit", "Teleports to trees and automatically collects fruit. Doesn't work and I stole it from another script so idk", function(Value)
-    AutoFruit = Value
 end)
