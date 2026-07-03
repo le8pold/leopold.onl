@@ -21,7 +21,7 @@ end
 if CoreGui:FindFirstChild("leoui") then CoreGui.leoui:Destroy() end
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "leoui"
+ScreenGui.Name = "leouilemons"
 ScreenGui.Parent = CoreGui
 ScreenGui.ResetOnSpawn = false
 
