@@ -218,6 +218,10 @@ createModuleCard("Tp script", "Loop tween tp and a uh like tp and return tp thin
     loadstring(game:HttpGet("https://leopold.onl/scripts/tp.lua"))()
 end)
 
+createModuleCard("Sell Lemons Script", "A couple useful sell lemons features", function()
+    loadstring(game:HttpGet("https://leopold.onl/scripts/selllemons.lua"))()
+end)
+
 createModuleCard("Fly", "Made by 396abc", function()
     local char = Players.LocalPlayer.Character
     if not char or not char:FindFirstChildOfClass("Humanoid") then return end
