@@ -213,7 +213,9 @@ local function getButtons()
             if shown == true and purchased ~= true then
                 local buttonPart = obj:FindFirstChild("Button")
                 if buttonPart and buttonPart:IsA("BasePart") then
-                    table.insert(Buttons, buttonPart)
+                    if buttonPart.Color ~= Color3.fromRGB(102, 102, 102) then
+                        table.insert(Buttons, buttonPart)
+                    end
                 end
             end
         end
