@@ -3,102 +3,74 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>leopold.onl/counter</title>
+  <title>Counter</title>
   <style>
     body {
       background-color: #ffffff;
       color: #000000;
-      font-family: Arial, sans-serif;
+      font-family: monospace;
       margin: 0;
-      padding: 40px 20px;
-      text-align: center;
+      padding: 40px;
     }
-
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-    }
-
-    .row {
+    .stats {
       display: flex;
-      justify-content: space-evenly;
-      align-items: center;
-      margin-bottom: 40px;
+      gap: 50px;
     }
-
-    .stat-box {
-      flex: 1;
+    .num {
+      font-size: 72px;
+      margin-top: 10px;
     }
-
-    h1 {
+    .last-used {
+      margin-top: 40px;
       font-size: 18px;
-      font-weight: bold;
-      text-transform: uppercase;
-      margin: 0 0 10px 0;
-    }
-
-    .number {
-      font-size: 64px;
-      font-weight: bold;
-      margin: 0;
-    }
-
-    .last-pressed {
-      font-size: 16px;
-      margin-top: 30px;
-    }
-
-    #lastPressed {
-      font-weight: bold;
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <div class="row">
-      <div class="stat-box">
-        <h1>Total</h1>
-        <div id="total" class="number">...</div>
-      </div>
-      <div class="stat-box">
-        <h1>Today</h1>
-        <div id="today" class="number">...</div>
-      </div>
+  <div class="stats">
+    <div>
+      <div>Total:</div>
+      <div id="total" class="num">0</div>
     </div>
-
-    <div class="last-pressed">
-      Last pressed: <span id="lastPressed">Loading...</span>
+    <div>
+      <div>Today:</div>
+      <div id="today" class="num">0</div>
     </div>
   </div>
 
+  <div class="last-used">
+    Last pressed: <span id="lastPressed">Never</span>
+  </div>
+
   <script>
+    const WORKER_URL = "https://actionbuttoncounter.hylton-leopold.workers.dev";
 
-    const WORKER_URL = "https://actionbuttoncounter.hylton-leopold.workers.dev/";
-
-    async function getStats() {
+    async function fetchStats() {
       try {
-        const response = await fetch(WORKER_URL, { method: "GET" });
-        if (!response.ok) throw new Error();
-
-        const data = await response.json();
-
-        document.getElementById("total").textContent = data.total_clicks ?? 0;
-        document.getElementById("today").textContent = data.clicks_today ?? 0;
-
+        const res = await fetch(WORKER_URL);
+        const data = await res.json();
+        
+        document.getElementById('total').textContent = data.total_clicks ?? 0;
+        document.getElementById('today').textContent = data.clicks_today ?? 0;
+        
         if (data.last_pressed) {
           const date = new Date(data.last_pressed);
-          document.getElementById("lastPressed").textContent = date.toLocaleString();
+          document.getElementById('lastPressed').textContent = date.toLocaleString();
         } else {
-          document.getElementById("lastPressed").textContent = "Never";
+          document.getElementById('lastPressed').textContent = "Never";
         }
       } catch (err) {
-        document.getElementById("lastPressed").textContent = "Error loading stats";
+        console.error("Fetch error:", err);
       }
     }
 
-    getStats();
+    // Initial load
+    fetchStats();
+
+    // Fetch new stats every 2 seconds automatically in background
+    setInterval(fetchStats, 2000);
   </script>
+
 </body>
 </html>
